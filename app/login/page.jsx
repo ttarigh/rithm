@@ -1,6 +1,6 @@
-'use client' // Required for useState
+'use client' // Required for useState and Suspense
 
-import { useState } from 'react' // Import useState
+import { Suspense, useState } from 'react' // Import Suspense and useState
 import { useSearchParams } from 'next/navigation' // Import useSearchParams
 import { login, signup } from './actions'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'; // Or use react-icons if preferred
@@ -34,11 +34,12 @@ function PasswordInput({ id, name, label, required = false }) {
   );
 }
 
-export default function LoginPage() {
+// New component containing the form logic
+function LoginForm() {
   const [isSignUp, setIsSignUp] = useState(false) // State to track mode
   const [error, setError] = useState('') // State for error messages
   const [loading, setLoading] = useState(false) // State for loading indicator
-  const searchParams = useSearchParams() // Get search params
+  const searchParams = useSearchParams() // Get search params - NOW SAFE INSIDE SUSPENSE
   const urlMessage = searchParams.get('message') // Get message from URL
 
   const handleSubmit = async (event) => {
@@ -148,5 +149,14 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Default export now wraps LoginForm with Suspense
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading page...</div>}> {/* Added Suspense */} 
+      <LoginForm />
+    </Suspense>
   )
 }
