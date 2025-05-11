@@ -65,41 +65,86 @@ const Step1NameAge = ({ onComplete, initialData }) => {
 const Step2ExploreScreenshot = ({ onComplete, onPrevious, initialData, userId }) => {
   const [screenshotUrl, setScreenshotUrl] = useState(initialData.screenshotUrl || null);
   const [uploading, setUploading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false); // New state for analysis status
+  const [digitalPheromoneAnalysis, setDigitalPheromoneAnalysis] = useState(initialData.digitalPheromoneAnalysis || null); // New state for analysis result
+  const [analysisError, setAnalysisError] = useState(null); // New state for analysis error
+
+  const handleImageUpload = async (url) => {
+    setScreenshotUrl(url);
+    setUploading(false); // Reset upload status on success
+    setDigitalPheromoneAnalysis(null); // Reset previous analysis if a new image is uploaded
+    setAnalysisError(null); // Reset previous error
+    setIsAnalyzing(true);
+    try {
+      const response = await fetch('/api/analyze-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: url }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Analysis failed with status: ${response.status}`);
+      }
+      const data = await response.json();
+      setDigitalPheromoneAnalysis(data.analysis);
+    } catch (error) {
+      console.error("Error calling analysis API:", error);
+      setAnalysisError(error.message || "Failed to analyze image. Please try again or skip.");
+      // Optionally, allow user to proceed without analysis or retry
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const handleNext = () => {
-    // Optional: Add validation to ensure a screenshot was uploaded
     if (!screenshotUrl) {
       alert('Please upload your Explore page screenshot.');
       return;
     }
-    onComplete({ screenshotUrl });
+    // If analysis is crucial, you might want to prevent proceeding if it failed or is missing
+    // For now, we allow proceeding even if analysis is null or errored.
+    // if (isAnalyzing) {
+    //   alert('Please wait for the image analysis to complete.');
+    //   return;
+    // }
+    // if (!digitalPheromoneAnalysis && !analysisError) { // If you want to make analysis mandatory and it hasn't run
+    //  alert('Image analysis is pending or has not been performed.');
+    //  return;
+    // }
+    onComplete({ screenshotUrl, digitalPheromoneAnalysis }); // Pass analysis to parent
   };
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Upload Your IG Explore Page</h2>
-      <p className="text-sm text-gray-600">This will be shown on your profile.</p>
+      <p className="text-sm text-gray-600">This will be shown on your profile. We'll also analyze it to understand your digital vibe.</p>
       <ExploreScreenshotUpload
-        uid={userId} // Pass the user ID for storage path
+        uid={userId}
         url={screenshotUrl}
-        size={200} // Adjust size as needed
-        onUpload={(url) => {
-          setScreenshotUrl(url);
-          setUploading(false); // Reset upload status on success
-        }}
-        onUploading={setUploading} // Optional: prop to track upload status
+        size={200}
+        onUpload={handleImageUpload} // Use the new handler
+        onUploading={setUploading}
       />
-      <div className="flex flex-col space-y-2 pt-2"> {/* Container for buttons */} 
+      {isAnalyzing && <p className="text-sm text-indigo-600">Analyzing image...</p>}
+      {analysisError && <p className="text-sm text-red-600">Error: {analysisError}</p>}
+      {digitalPheromoneAnalysis && !isAnalyzing && (
+        <div className="p-3 bg-indigo-50 rounded-md">
+          <p className="text-sm font-medium text-indigo-700">Digital Pheromone:</p>
+          <p className="text-sm text-indigo-600">{digitalPheromoneAnalysis}</p>
+        </div>
+      )}
+      <div className="flex flex-col space-y-2 pt-2">
         <button
           onClick={handleNext}
-          disabled={uploading || !screenshotUrl} 
+          disabled={uploading || isAnalyzing || !screenshotUrl} // Disable if uploading, analyzing, or no screenshot
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
         >
-          {uploading ? 'Uploading...' : 'Next'}
+          {uploading ? 'Uploading...' : isAnalyzing ? 'Analyzing...' : 'Next'}
         </button>
         <button 
           onClick={onPrevious} 
-          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          disabled={isAnalyzing} // Optionally disable previous if analysis is running
+          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
         >
           Previous
         </button>
@@ -267,6 +312,7 @@ export default function SignUpSteps() {
     name: '',
     age: null,
     screenshotUrl: null,
+    digitalPheromoneAnalysis: null,
     gender: '',
     preference: [],
     instagram: '',
@@ -340,6 +386,7 @@ export default function SignUpSteps() {
         dating_preference: finalData.preference.join(','),
         instagram_handle: finalData.instagram,
         explore_screenshot_url: finalData.screenshotUrl,
+        digital_pheromone_analysis: finalData.digitalPheromoneAnalysis,
         updated_at: new Date().toISOString(),
       });
 

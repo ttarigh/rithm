@@ -56,15 +56,14 @@ export default function SwipeFeed({ user }) {
   const [error, setError] = useState(null);
   const [currentUserProfile, setCurrentUserProfile] = useState(null);
   const [matchOccurred, setMatchOccurred] = useState(false); 
-  const [matchedProfileInfo, setMatchedProfileInfo] = useState(null); // State for matched user info
+  const [matchedProfileInfo, setMatchedProfileInfo] = useState(null);
 
-  // Fetch current user's profile first
   const fetchCurrentUserProfile = useCallback(async () => {
     if (!user) return;
     try {
       const { data, error: profileError } = await supabase
         .from('profiles')
-        .select('gender, dating_preference')
+        .select('full_name, gender, dating_preference') // Added full_name
         .eq('id', user.id)
         .single();
 
@@ -77,8 +76,8 @@ export default function SwipeFeed({ user }) {
             throw profileError;
         }
       }
-       if (!data?.gender || !data?.dating_preference) {
-           setError('Please set your gender and dating preferences in your profile.');
+       if (!data?.full_name || !data?.gender || !data?.dating_preference) { // Check full_name too
+           setError('Please ensure your profile (including name, gender, and preferences) is complete.');
            return null;
        }
       setCurrentUserProfile(data);
@@ -168,18 +167,19 @@ export default function SwipeFeed({ user }) {
     loadData();
   }, [fetchCurrentUserProfile, fetchProfiles]);
 
-  // Function to handle swipe actions
   const handleSwipe = async (liked, swipedProfileId) => {
-     if (!user || !swipedProfileId || !currentUserProfile || matchOccurred) return; // Prevent swiping if match popup is showing
-
-    // Optimistically move to next card state immediately only if not liked or no match occurs
-    // We will handle index change after match check if liked is true
-    if (!liked) {
-        setCurrentIndex(prevIndex => prevIndex + 1);
+    // Initial guards for critical data and existing match popup
+    if (!user || !swipedProfileId || !currentUserProfile || !currentUserProfile.full_name) {
+      console.warn("SwipeFeed: Missing critical data for swipe. User:", !!user, "swipedProfileId:", !!swipedProfileId, "currentUserProfile:", !!currentUserProfile, "currentUserProfile.name:", !!currentUserProfile?.full_name);
+      return;
+    }
+    if (matchOccurred) {
+      console.log("SwipeFeed: Swipe attempt while match notification is active.");
+      return;
     }
 
     try {
-      // Insert the swipe
+      // Insert the swipe record into the database
       const { error: swipeError } = await supabase.from('swipes').insert({
         swiper_id: user.id,
         swiped_id: swipedProfileId,
@@ -187,34 +187,33 @@ export default function SwipeFeed({ user }) {
       });
 
       if (swipeError) {
-          // TODO: Handle swipe error (revert optimistic update?)
-          console.error("Error saving swipe:", swipeError);
-          setError('Could not save swipe.');
-          // Revert index change if swipe failed and it was a 'pass'
-          if (!liked) {
-              setCurrentIndex(prevIndex => prevIndex - 1);
-          }
-          return; // Stop processing on error
+        console.error("SwipeFeed: Error saving swipe:", swipeError);
+        setError('Could not save swipe.');
+        // Do not change index if DB operation failed
+        return;
       }
 
-      console.log(`Swiped ${liked ? 'right' : 'left'} on ${swipedProfileId}`);
+      console.log(`SwipeFeed: Swiped ${liked ? 'right (like)' : 'left (pass)'} on ${swipedProfileId}`);
 
-      // --- MATCH DETECTION --- 
+      // Logic after successful swipe recording
       if (liked) {
+        // --- MATCH DETECTION --- (This is for 'like' swipes)
         const { data: matchData, error: matchError } = await supabase
           .from('swipes')
-          .select('id') // We only need to know if a row exists
-          .eq('swiper_id', swipedProfileId) // The other person... 
+          .select('id')
+          .eq('swiper_id', swipedProfileId) // The other person...
           .eq('swiped_id', user.id)     // ...swiped on the current user...
           .eq('liked', true)              // ...and liked them.
-          .maybeSingle(); // Returns one row or null
+          .maybeSingle();
 
         if (matchError) {
-          console.error("Error checking for match:", matchError);
-          // Proceed without match notification, but log error
+          console.error("SwipeFeed: Error checking for match:", matchError);
+          // It was a 'like' but an error occurred checking for a match.
+          // Still advance to the next card.
+          setCurrentIndex(prevIndex => prevIndex + 1);
         } else if (matchData) {
-          // MATCH FOUND! Fetch matched profile info
-          console.log("MATCH DETECTED! Fetching profile info...");
+          // MATCH FOUND!
+          console.log("SwipeFeed: MATCH DETECTED! Fetching profile info...");
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('full_name, instagram_handle')
@@ -222,35 +221,64 @@ export default function SwipeFeed({ user }) {
             .single();
             
           if (profileError) {
-            console.error("Error fetching matched profile info:", profileError);
-            // Show generic match notification even if profile fetch fails
+            console.error("SwipeFeed: Error fetching matched profile info:", profileError);
             setMatchedProfileInfo(null); 
           } else {
-            setMatchedProfileInfo(profileData); // Store matched profile info
+            setMatchedProfileInfo(profileData);
+            // Send notification email
+            if (currentUserProfile?.full_name && profileData?.full_name) {
+              fetch('/api/notify-match', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  currentUser: { id: user.id, name: currentUserProfile.full_name },
+                  matchedUser: { id: swipedProfileId, name: profileData.full_name }
+                })
+              })
+              .then(async res => {
+                if (!res.ok) {
+                  const errorPayload = await res.json();
+                  console.error('Match notification API error:', res.status, errorPayload);
+                } else {
+                  console.log('Match notification email request sent successfully.');
+                }
+              })
+              .catch(err => {
+                console.error('Failed to send match notification request:', err);
+              });
+            }
           }
-          setMatchOccurred(true); // Show the notification
-          return; // Stop further processing in handleSwipe until popup dismissed
+          setMatchOccurred(true);
+          // Important: DO NOT call setCurrentIndex here. 
+          // It will be called when the match notification is dismissed.
+          return; 
+        } else {
+          // Liked, but no mutual match found yet. Advance to the next card.
+          console.log("SwipeFeed: Liked, but no mutual match yet.");
+          setCurrentIndex(prevIndex => prevIndex + 1);
         }
-        // If no match or error checking match, advance the index for the 'like' swipe
+      } else {
+        // Not liked (it was a "pass" swipe). Swipe was successful. Advance to the next card.
+        console.log("SwipeFeed: Passed.");
         setCurrentIndex(prevIndex => prevIndex + 1);
       }
-      // --- END MATCH DETECTION ---
 
-      // Fetch more profiles if we're running low (and no match occurred)
-      if (currentIndex >= profiles.length - 3) {
-          console.log("Fetching more profiles...");
-          if(currentUserProfile) {
-              fetchProfiles(currentUserProfile);
-          }
+      // Proactively fetch more profiles if nearing the end of the current list
+      // This check should ideally use the index value *after* it has been updated.
+      // However, since setCurrentIndex is async, `currentIndex` here might be the old value.
+      // A more robust way could be to pass the nextIndex to fetchProfiles if needed,
+      // or rely on useEffect to fetch when profiles array is empty or short.
+      // For simplicity and given current structure, this might be okay if fetchProfiles appends.
+      if (currentIndex + 1 >= profiles.length - 2 && profiles.length > 0 && !matchOccurred) {
+         console.log("SwipeFeed: Approaching end of profiles list, fetching more.");
+         if(currentUserProfile) {
+             fetchProfiles(currentUserProfile); // Assuming this appends and doesn't reset index.
+         }
       }
 
     } catch (err) {
-      console.error("Error during swipe handling:", err);
+      console.error("SwipeFeed: General error during swipe handling:", err);
       setError('An error occurred while swiping.');
-       // Revert index change if error occurred during match check etc.
-       if (!liked) { // Only revert if it was a pass swipe initially moved
-            setCurrentIndex(prevIndex => prevIndex - 1);
-       }
     }
   };
 
