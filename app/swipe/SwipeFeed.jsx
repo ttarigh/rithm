@@ -492,9 +492,11 @@ export default function SwipeFeed({ user }) {
 
       {/* Footer Text: Positioned absolutely */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:bottom-6 z-30">
-        <span className="italic text-black hover:bg-[#ffff00] cursor-pointer text-sm">
-          about Rithm.love
-        </span>
+        <Link href="/about" >
+          <span className="italic text-black hover:bg-[#ffff00] cursor-pointer text-sm">
+            more abt Rithm.love
+          </span>
+        </Link>
       </div>
       
       {/* JSX Styles for Heart Confetti Animation */}
