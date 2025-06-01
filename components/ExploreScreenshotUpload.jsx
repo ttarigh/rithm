@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Image from 'next/image'
 
-export default function ExploreScreenshotUpload({ uid, url, size, onUpload }) {
+export default function ExploreScreenshotUpload({ uid, url, size, onUpload, onUploading }) {
   const supabase = createClient()
   const [uploading, setUploading] = useState(false)
 
@@ -11,20 +11,13 @@ export default function ExploreScreenshotUpload({ uid, url, size, onUpload }) {
   const uploadScreenshot = async (event) => {
     try {
       setUploading(true)
+      if (onUploading) onUploading(true)
 
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('You must select an image to upload.')
       }
 
       const file = event.target.files[0]
-      const fileName = file.name.toLowerCase()
-
-      if (!fileName.includes("screenshot")) {
-        alert("Warning: The selected file name doesn't seem to be a screenshot. Please ensure you upload the correct file.")
-        setUploading(false)
-        event.target.value = null
-        return
-      }
 
       const fileExt = file.name.split('.').pop()
       const filePath = `${uid}-explorescreenshot.${fileExt}`
@@ -55,32 +48,38 @@ export default function ExploreScreenshotUpload({ uid, url, size, onUpload }) {
     } catch (error) {
       // Check if the error object itself might contain more clues
       console.error("Upload/Get URL Error Object:", error); 
-      alert(`Error uploading screenshot: ${error.message || 'Unknown error'}`)
+      alert(`Error uploading image: ${error.message || 'Unknown error'}`)
     } finally {
       setUploading(false)
+      if (onUploading) onUploading(false)
     }
   }
 
   return (
     <div>
       {url ? (
-        <Image
-          width={size}
-          height={size} 
-          src={url}
-          alt="Explore Screenshot"
-          className="screenshot image" 
-          style={{ height: 'auto', width: size }} 
-          onError={(e) => console.error("Image load error:", e.target.src)}
-        />
+        <div className="flex justify-center items-center w-full mb-3"> 
+            <Image
+              width={size}
+              height={size}
+              src={url}
+              alt="Explore Screenshot"
+              className="screenshot image border border-dashed border-black"
+              style={{ height: 'auto', width: size }} 
+              onError={(e) => console.error("Image load error:", e.target.src)}
+            />
+        </div>
       ) : (
-        <div className="screenshot no-image" style={{ height: size, width: size, border: '1px dashed gray' }} > 
-          <span>No Screenshot</span>
+        <div className="flex justify-center items-center screenshot no-image w-full border border-dashed border-black mb-3" style={{ height: size, width: size }} > 
+          <span className="text-sm text-black italic">No Scrollshot uploaded</span>
         </div>
       )}
-      <div style={{ width: size, marginTop: '10px' }}>
-        <label className="button primary block" htmlFor="screenshotUpload">
-          {uploading ? 'Uploading ...' : 'Upload Screenshot'}
+      <div className="w-full mt-3">
+        <label 
+          htmlFor="screenshotUpload"
+          className="w-full flex justify-center py-3 px-4 border border-dashed border-black text-black text-sm font-medium bg-transparent hover:bg-[#ffff00] focus:outline-none cursor-pointer"
+        >
+          {uploading ? 'Uploading ...' : 'upload scrollshot'}
         </label>
         <input
           style={{

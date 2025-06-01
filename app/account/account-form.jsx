@@ -4,16 +4,16 @@ import { createClient } from '@/utils/supabase/client'
 import ExploreScreenshotUpload from '@/components/ExploreScreenshotUpload'
 
 // Define options for gender and preferences
-const GENDER_OPTIONS = ['Female', 'Male', 'Other']
-const PREFERENCE_OPTIONS = ['Female', 'Male', 'Other']
+const GENDER_OPTIONS = ['Man', 'Woman', 'Nonbinary']
+const PREFERENCE_OPTIONS = ['Man', 'Woman', 'Nonbinary']
 
 export default function AccountForm({ user }) {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [fullname, setFullname] = useState(null)
   const [age, setAge] = useState(null)
-  const [gender, setGender] = useState('') // Default to empty string for select
-  const [datingPreference, setDatingPreference] = useState([]) // Store as array
+  const [gender, setGender] = useState('')
+  const [datingPreference, setDatingPreference] = useState([])
   const [instagramHandle, setInstagramHandle] = useState(null)
   const [exploreScreenshotUrl, setExploreScreenshotUrl] = useState(null)
 
@@ -38,8 +38,7 @@ export default function AccountForm({ user }) {
       if (data) {
         setFullname(data.full_name)
         setAge(data.age)
-        setGender(data.gender || '') // Ensure it's a string
-        // Parse comma-separated string from DB into array for state
+        setGender(data.gender || '')
         setDatingPreference(data.dating_preference ? data.dating_preference.split(',') : [])
         setInstagramHandle(data.instagram_handle)
         setExploreScreenshotUrl(data.explore_screenshot_url)
@@ -56,14 +55,13 @@ export default function AccountForm({ user }) {
     getProfile()
   }, [user, getProfile])
 
-  // Handle changes to dating preference checkboxes
   const handlePreferenceChange = (event) => {
     const { value, checked } = event.target
     setDatingPreference(prev => {
       if (checked) {
-        return [...prev, value] // Add preference
+        return [...prev, value]
       } else {
-        return prev.filter(p => p !== value) // Remove preference
+        return prev.filter(p => p !== value)
       }
     })
   }
@@ -72,7 +70,6 @@ export default function AccountForm({ user }) {
     try {
       setLoading(true)
 
-      // Validate age
       if (age !== null && (isNaN(age) || age < 18)) {
         alert('Age must be a number and at least 18.')
         setLoading(false)
@@ -82,9 +79,8 @@ export default function AccountForm({ user }) {
       const { error } = await supabase.from('profiles').upsert({
         id: user?.id,
         full_name: fullname,
-        age: age, // Already parsed in onChange
+        age: age,
         gender: gender,
-        // Convert array state back to comma-separated string for DB
         dating_preference: datingPreference.join(','),
         instagram_handle: instagramHandle,
         explore_screenshot_url: exploreScreenshotUrl,
@@ -102,7 +98,7 @@ export default function AccountForm({ user }) {
   }
 
   return (
-    <div className="form-widget space-y-4"> {/* Add spacing */}
+    <div className="form-widget space-y-6 p-6 max-w-lg mx-auto bg-white ">
       <ExploreScreenshotUpload
         uid={user?.id}
         url={exploreScreenshotUrl}
@@ -113,37 +109,37 @@ export default function AccountForm({ user }) {
       />
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-        <input id="email" type="text" value={user?.email} disabled className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-100" />
+        <label htmlFor="email" className="block text-sm italic text-black">Email</label>
+        <input id="email" type="text" value={user?.email} disabled className="mt-1 block w-full border border-dashed border-black p-2 bg-gray-100 focus:outline-none focus:border-[#ff00ff]" />
       </div>
       <div>
-        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
+        <label htmlFor="fullName" className="block text-sm italic text-black">Name</label>
         <input
           id="fullName"
           type="text"
           value={fullname || ''}
           onChange={(e) => setFullname(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full border border-dashed border-black p-2 focus:outline-none focus:border-[#ff00ff]"
         />
       </div>
       <div>
-        <label htmlFor="age" className="block text-sm font-medium text-gray-700">Age (Must be 18+)</label>
+        <label htmlFor="age" className="block text-sm italic text-black">Age (Must be 18+)</label>
         <input
           id="age"
           type="number"
-          min="18" // Add min attribute
-          value={age === null ? '' : age} // Handle null for empty input
-          onChange={(e) => setAge(e.target.value === '' ? null : parseInt(e.target.value, 10))} // Ensure base 10, handle empty string
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          min="18"
+          value={age === null ? '' : age}
+          onChange={(e) => setAge(e.target.value === '' ? null : parseInt(e.target.value, 10))}
+          className="mt-1 block w-full border border-dashed border-black p-2 focus:outline-none focus:border-[#ff00ff]"
         />
       </div>
       <div>
-        <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
+        <label htmlFor="gender" className="block text-sm italic text-black">Gender</label>
         <select
           id="gender"
           value={gender}
           onChange={(e) => setGender(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full border border-dashed border-black p-2 bg-white focus:outline-none focus:border-[#ff00ff]"
         >
           <option value="" disabled>Select your gender</option>
           {GENDER_OPTIONS.map(option => (
@@ -152,7 +148,7 @@ export default function AccountForm({ user }) {
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Dating Preference (Select all that apply)</label>
+        <label className="block text-sm italic text-black">Dating Preference (Select all that apply)</label>
         <div className="mt-2 space-y-2">
           {PREFERENCE_OPTIONS.map(option => (
             <div key={option} className="flex items-center">
@@ -163,9 +159,9 @@ export default function AccountForm({ user }) {
                 value={option}
                 checked={datingPreference.includes(option)}
                 onChange={handlePreferenceChange}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="h-4 w-4 border-black accent-[#ff00ff] focus:ring-0 focus:outline-none"
               />
-              <label htmlFor={`preference-${option}`} className="ml-2 block text-sm text-gray-900">
+              <label htmlFor={`preference-${option}`} className="ml-2 block text-sm italic text-black">
                 {option}
               </label>
             </div>
@@ -173,9 +169,9 @@ export default function AccountForm({ user }) {
         </div>
       </div>
       <div>
-        <label htmlFor="instagramHandle" className="block text-sm font-medium text-gray-700">Instagram Handle</label>
-        <div className="mt-1 flex rounded-md shadow-sm">
-          <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-gray-500 sm:text-sm">
+        <label htmlFor="instagramHandle" className="block text-sm italic text-black">Instagram Handle (only shown to matches)</label>
+        <div className="mt-1 flex">
+          <span className="inline-flex items-center border-l border-t border-b border-dashed border-black bg-transparent px-3 text-black">
             @
           </span>
           <input
@@ -183,32 +179,30 @@ export default function AccountForm({ user }) {
             type="text"
             placeholder="yourhandle"
             value={instagramHandle || ''}
-            onChange={(e) => setInstagramHandle(e.target.value.replace(/^@/, ''))} // Remove leading @ if typed
-            className="block w-full min-w-0 flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            onChange={(e) => setInstagramHandle(e.target.value.replace(/^@/, ''))}
+            className="block w-full min-w-0 flex-1 border-r border-t border-b border-dashed border-black p-2 focus:outline-none focus:border-[#ff00ff]"
           />
         </div>
       </div>
 
-      <div className="pt-4"> {/* Add padding top */}
+      <div className="pt-6 space-y-4">
         <button
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+          className="w-full flex justify-center py-3 px-4 italic text-black text-sm font-medium bg-[#ff00ff] hover:bg-[#ffc3ff] focus:outline-none disabled:opacity-70"
           onClick={() => updateProfile()}
           disabled={loading}
         >
           {loading ? 'Loading ...' : 'Update Profile'}
         </button>
-      </div>
-      <div className="pt-4">
+
         <button
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="w-full flex justify-center py-3 px-4 italic border border-dashed border-black text-black text-sm font-medium bg-transparent hover:bg-[#ffff00] focus:outline-none"
           onClick={() => window.location.href = '/swipe'}
         >
           Back to Swiping
         </button>
-      </div>
-      <div>
-        <form action="/auth/signout" method="post">
-          <button className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" type="submit">
+
+        <form action="/auth/signout" method="post" className="w-full">
+          <button className="w-full flex justify-center py-3 px-4 italic border border-dashed border-black text-black text-sm font-medium bg-transparent hover:bg-[#ffff00] focus:outline-none" type="submit">
             Sign out
           </button>
         </form>

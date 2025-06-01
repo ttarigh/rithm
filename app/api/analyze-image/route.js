@@ -70,7 +70,7 @@ export async function POST(request) {
           data: base64Data,
         },
       },
-      { text: "Analyze this image, which is a user\'s social media explore page. Based on its content (e.g., themes, aesthetics, types of posts), provide a one-sentence analysis of their potential digital pheromone. The sentence should be written like esoteric internet art and science." },
+      { text: "Analyze this image, which is a user\'s social media explore page. Based on its content (e.g., themes, aesthetics, types of posts), provide a one-sentence analysis of their potential digital pheromone. The sentence should be written like esoteric internet art and science. Only output the sentence, no other text." },
     ];
 
     const result = await model.generateContent({

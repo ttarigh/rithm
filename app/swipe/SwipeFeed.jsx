@@ -8,45 +8,76 @@ import Link from 'next/link' // Import Link
 
 // Placeholder for Card component - we'll define this later
 const ProfileCard = ({ profile }) => {
-  if (!profile) return <div className="w-64 h-96 bg-gray-200 rounded-lg shadow-md flex items-center justify-center text-gray-800">No more profiles</div>;
+  if (!profile) return <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-800 border-2 border-dashed border-[#ff00ff]">No more profiles</div>;
 
   return (
-    <div className="absolute w-64 h-96 bg-white rounded-lg shadow-md overflow-hidden">
-      <img src={profile.explore_screenshot_url || '/placeholder.png'} alt={profile.full_name || 'Profile'} className="w-full h-4/5 object-cover" />
-      <div className="p-2 text-gray-900"> {/* Ensure text color contrast */}
-        <h3 className="font-bold text-lg">{profile.full_name}, {profile.age}</h3>
+    <div className="w-full h-full bg-white overflow-hidden flex flex-col border-2 border-dashed border-[#ff00ff]">
+      <div className="p-2 text-left flex-shrink-0">
+        <h3 className="text-lg text-[#ff00ff]">{profile.full_name}, {profile.age}</h3>
       </div>
+      <img src={profile.explore_screenshot_url || '/placeholder.png'} alt={profile.full_name || 'Profile'} className="w-full object-cover flex-grow" />
     </div>
   );
 };
 
 // Updated Match Notification Component
-const MatchNotification = ({ onDismiss, matchedProfile }) => (
-  <div
-    className="absolute inset-0 bg-black bg-opacity-80 flex flex-col justify-center items-center z-10 cursor-pointer rounded-lg p-4 text-center"
-    onClick={onDismiss}
-  >
-    <h2 className="text-4xl font-bold text-white mb-4 animate-pulse">You got Rithm!</h2>
-    {matchedProfile && (
-        <div className="mb-4">
-            <p className="text-xl text-white">You matched with {matchedProfile.full_name || 'someone'}!</p>
-            <p className="text-lg text-gray-300 mt-2">
-                Their Instagram: 
-                <a 
-                    href={`https://instagram.com/${matchedProfile.instagram_handle}`}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()} // Prevent closing popup when clicking link
-                    className="font-semibold text-blue-400 hover:text-blue-300 ml-1"
-                >
-                    @{matchedProfile.instagram_handle}
-                </a>
-            </p>
-        </div>
-    )}
-    <p className="text-lg text-gray-400">(Click anywhere to continue swiping)</p>
-  </div>
-);
+const MatchNotification = ({ onDismiss, matchedProfile }) => {
+  // Generate styles for hearts once, or when component mounts if preferred
+  // For simplicity here, generating inline, but useMemo could optimize if needed
+  const numHearts = 50; // Number of hearts for the background
+  const heartStyles = Array.from({ length: numHearts }).map((_, i) => ({
+    top: `${Math.random() * 100}%`,
+    left: `${Math.random() * 100}%`,
+    fontSize: `${Math.random() * 3 + 1}rem`, // e.g., 1rem to 4rem
+    color: ['#ff00ff', '#ffc3ff', '#000000'][Math.floor(Math.random() * 3)],
+    transform: `rotate(${Math.random() * 90 - 45}deg)`,
+    zIndex: 10, // Ensure hearts are behind the card content but above page
+  }));
+
+  return (
+    <div
+      className="absolute inset-0 flex flex-col justify-center items-center z-20 cursor-pointer p-4"
+      onClick={onDismiss}
+      // No specific background here, hearts will fill it. Or a very light base if needed.
+    >
+      {/* Background Hearts Layer */}
+      <div className="absolute inset-0 overflow-hidden z-0">
+        {heartStyles.map((style, i) => (
+          <span
+            key={i}
+            className="absolute pointer-events-none"
+            style={style}
+          >
+            &lt;3
+          </span>
+        ))}
+      </div>
+
+      {/* Yellow Notification Card - sits above the hearts */}
+      <div className="relative bg-[#ffff00] p-6 md:p-20 rounded-md text-center z-30 max-w-md w-full">
+        <h2 className="text-4xl md:text-5xl font-bold text-[#ff00ff] mb-4 animate-pulse">You've got Rithm!</h2>
+        {matchedProfile && (
+            <div className="mb-4">
+                <p className="text-lg text-black/80 italic">continue the conversation on IG</p>
+                <p className="text-2xl text-[#ff00ff]">
+                    with 
+                    <a 
+                        href={`https://instagram.com/${matchedProfile.instagram_handle}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()} 
+                        className="font-semibold text-blue-600 hover:text-blue-500 ml-1"
+                    >
+                        @{matchedProfile.instagram_handle}
+                    </a>
+                </p>
+            </div>
+        )}
+        <p className="text-xs text-gray-800/50">(Click anywhere to continue swiping)</p>
+      </div>
+    </div>
+  );
+};
 
 export default function SwipeFeed({ user }) {
   const supabase = createClient();
@@ -57,6 +88,8 @@ export default function SwipeFeed({ user }) {
   const [currentUserProfile, setCurrentUserProfile] = useState(null);
   const [matchOccurred, setMatchOccurred] = useState(false); 
   const [matchedProfileInfo, setMatchedProfileInfo] = useState(null);
+  const [showHeartConfetti, setShowHeartConfetti] = useState(false);
+  const [flashPageRed, setFlashPageRed] = useState(false); // State for red flash
 
   const fetchCurrentUserProfile = useCallback(async () => {
     if (!user) return;
@@ -251,16 +284,26 @@ export default function SwipeFeed({ user }) {
           setMatchOccurred(true);
           // Important: DO NOT call setCurrentIndex here. 
           // It will be called when the match notification is dismissed.
+          // Trigger confetti on like
+          setShowHeartConfetti(true);
+          setTimeout(() => setShowHeartConfetti(false), 1500); // Reset after 1.5s
           return; 
         } else {
           // Liked, but no mutual match found yet. Advance to the next card.
           console.log("SwipeFeed: Liked, but no mutual match yet.");
           setCurrentIndex(prevIndex => prevIndex + 1);
         }
+        // Trigger confetti on like
+        setShowHeartConfetti(true);
+        setTimeout(() => setShowHeartConfetti(false), 1500); // Reset after 1.5s
+
       } else {
         // Not liked (it was a "pass" swipe). Swipe was successful. Advance to the next card.
         console.log("SwipeFeed: Passed.");
         setCurrentIndex(prevIndex => prevIndex + 1);
+        // Trigger red flash on pass
+        setFlashPageRed(true);
+        setTimeout(() => setFlashPageRed(false), 150); // Flash for 150ms
       }
 
       // Proactively fetch more profiles if nearing the end of the current list
@@ -318,7 +361,7 @@ export default function SwipeFeed({ user }) {
 
   if (error) {
      return (
-        <div className="flex flex-col justify-center items-center h-screen text-red-500">
+        <div className="flex flex-col justify-center items-center h-screen text-red-500 bg-white p-4">
             <p>{error}</p>
             <a href="/account" className="mt-2 text-indigo-600 hover:text-indigo-800">Go to Profile</a> 
         </div>
@@ -327,32 +370,97 @@ export default function SwipeFeed({ user }) {
 
   // Main return logic with Match Notification
   return (
-    <div {...handlers} className="flex justify-center items-center h-screen bg-gray-100 touch-none overflow-hidden"> {/* Added overflow-hidden */}
-      <div className="relative w-64 h-96">
-        {/* Conditional Match Notification - pass matched info */} 
-        {matchOccurred && <MatchNotification onDismiss={dismissMatchNotification} matchedProfile={matchedProfileInfo} />}
+    // Conditionally apply red background for flash effect
+    <div className={`relative flex flex-col items-center justify-center min-h-screen ${flashPageRed ? 'bg-[#ff0000]' : 'bg-white'} overflow-y-auto p-4 md:p-6`}>
+
+      {/* Header Text: Positioned absolutely */}
+      <div className="absolute top-4 left-4 md:top-6 md:left-6 z-30">
+        <Link href="/matches">
+          <span className="italic text-black hover:bg-[#ffff00] cursor-pointer text-2xl font-bold">
+            matches
+          </span>
+        </Link>
+      </div>
+      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-30">
+        <Link href="/account">
+          <span className="italic text-black hover:bg-[#ffff00] cursor-pointer text-2xl font-bold">
+            me
+          </span>
+        </Link>
+      </div>
+
+      {/* Swipeable Content Area: Added touch-none here */}
+      <div {...handlers} className="flex flex-col md:flex-row items-center md:justify-center md:gap-x-16 touch-none"> 
         
-        {/* Render the stack of cards - ensure it's below the notification if visible */}
-        <div className={`${matchOccurred ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
-            {currentIndex < profiles.length ? (
-               <ProfileCard profile={profiles[currentIndex]} />
-            ) : (
-               <ProfileCard profile={null} /> // Show "No more profiles" card
-            )}
+        {/* Desktop Pass Button (Visible on MD screens and up) */}
+        <button
+            onClick={() => {
+              if (!matchOccurred && currentIndex < profiles.length) {
+                handleSwipe(false, profiles[currentIndex].id);
+              }
+            }}
+            disabled={matchOccurred || currentIndex >= profiles.length}
+            className="group hidden md:flex bg-transparent border-2 border-dashed border-[#ff00ff] text-[#ff00ff] rounded-full w-32 h-32 items-center justify-center text-3xl disabled:opacity-50 hover:bg-red-500 hover:text-white hover:border-red-500 focus:outline-none" /* Increased size to w-32 h-32, removed font-bold */
+            aria-label="Pass Desktop"
+          >
+            <span className="group-hover:text-white">X</span>
+        </button>
+
+        {/* Profile Card and Match Notification Container - Sized for mobile and desktop */}
+        <div className="relative w-64 h-96 md:w-96 md:h-[576px]"> {/* Responsive sizing */}
+          {/* Conditional Match Notification - pass matched info */} 
+          {matchOccurred && <MatchNotification onDismiss={dismissMatchNotification} matchedProfile={matchedProfileInfo} />}
+          
+          {/* Render the stack of cards - ensure it's below the notification if visible */}
+          <div className={`${matchOccurred ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 w-full h-full`}>
+              {currentIndex < profiles.length ? (
+                 <ProfileCard profile={profiles[currentIndex]} />
+              ) : (
+                 <ProfileCard profile={null} /> // Show "No more profiles" card
+              )}
+          </div>
         </div>
 
-        {/* Buttons - Disable if match popup is showing */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-around z-20"> {/* Ensure buttons are above card */}
+        {/* Desktop Like Button (Visible on MD screens and up) */}
+        <button
+            onClick={() => {
+               if (!matchOccurred && currentIndex < profiles.length) {
+                handleSwipe(true, profiles[currentIndex].id);
+               }
+            }}
+            disabled={matchOccurred || currentIndex >= profiles.length}
+            className="group hidden md:flex relative bg-transparent border-2 border-dashed border-[#ff00ff] text-[#ff00ff] rounded-full w-32 h-32 items-center justify-center text-2xl disabled:opacity-50 hover:bg-green-500 hover:text-white hover:border-green-500 focus:outline-none" /* Increased size to w-32 h-32, removed font-bold, added relative */
+            aria-label="Like Desktop"
+          >
+            <span className="group-hover:text-white">&lt;3</span>
+            {showHeartConfetti && (
+              <div className="absolute inset-0 pointer-events-none">
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`absolute top-1/2 left-1/2 text-3xl ${i % 2 === 0 ? 'text-black' : 'text-[#ff00ff]'} heart-particle-${i + 1}`}
+                    style={{ transform: 'translate(-50%, -50%)' }} // Initial position
+                  >
+                    &lt;3
+                  </span>
+                ))}
+              </div>
+            )}
+        </button>
+
+        {/* Mobile Action Buttons - directly below the card, part of the swipeable/centered block, hidden on MD up */}
+        <div className="flex justify-around items-center w-full max-w-xs mt-8 md:hidden"> 
           <button
             onClick={() => {
               if (!matchOccurred && currentIndex < profiles.length) {
                 handleSwipe(false, profiles[currentIndex].id);
               }
             }}
-            disabled={matchOccurred || currentIndex >= profiles.length} // Disable if match or no profile
-            className="bg-red-500 text-white rounded-full p-4 disabled:opacity-50 shadow-lg"
+            disabled={matchOccurred || currentIndex >= profiles.length}
+            className="group bg-transparent border-2 border-dashed border-[#ff00ff] text-[#ff00ff] rounded-full w-20 h-20 flex items-center justify-center text-3xl disabled:opacity-50 hover:bg-red-500 hover:text-white hover:border-red-500 focus:outline-none"
+            aria-label="Pass"
           >
-            Pass
+            <span className="group-hover:text-white">X</span>
           </button>
           <button
             onClick={() => {
@@ -360,23 +468,94 @@ export default function SwipeFeed({ user }) {
                 handleSwipe(true, profiles[currentIndex].id);
                }
             }}
-            disabled={matchOccurred || currentIndex >= profiles.length} // Disable if match or no profile
-             className="bg-green-500 text-white rounded-full p-4 disabled:opacity-50 shadow-lg"
-           >
-            Like
+            disabled={matchOccurred || currentIndex >= profiles.length}
+            className="group relative bg-transparent border-2 border-dashed border-[#ff00ff] text-[#ff00ff] rounded-full w-20 h-20 flex items-center justify-center text-2xl disabled:opacity-50 hover:bg-green-500 hover:text-white hover:border-green-500 focus:outline-none" /* Added relative */
+            aria-label="Like"
+          >
+            <span className="group-hover:text-white">&lt;3</span>
+            {showHeartConfetti && (
+              <div className="absolute inset-0 pointer-events-none">
+                {Array.from({ length: 5 }).map((_, i) => ( // 5 particles for mobile
+                  <span
+                    key={i}
+                    className={`absolute top-1/2 left-1/2 text-3xl ${i % 2 === 0 ? 'text-black' : 'text-[#ff00ff]'} heart-particle-mobile-${i + 1}`}
+                    style={{ transform: 'translate(-50%, -50%)' }}
+                  >
+                    &lt;3
+                  </span>
+                ))}
+              </div>
+            )}
           </button>
         </div> 
-        <div className="absolute top-4 right-4 z-20 flex flex-col space-y-2">
-          <button onClick={() => window.location.href = '/account'} className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-3 shadow-lg text-xs w-24">
-            Profile
-          </button>
-          <Link href="/matches">
-             <span className="inline-block bg-purple-500 hover:bg-purple-600 text-white rounded-full p-3 shadow-lg text-xs w-24 text-center">
-                 Matches
-             </span>
-          </Link>
-        </div>
       </div>
+
+      {/* Footer Text: Positioned absolutely */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:bottom-6 z-30">
+        <span className="italic text-black hover:bg-[#ffff00] cursor-pointer text-sm">
+          about Rithm.love
+        </span>
+      </div>
+      
+      {/* JSX Styles for Heart Confetti Animation */}
+      <style jsx>{`
+        @keyframes heartSwarm1 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          100% { transform: translate(-100px, -120px) scale(1.5) rotate(-15deg); opacity: 0; }
+        }
+        .heart-particle-1, .heart-particle-mobile-1 {
+          animation: heartSwarm1 1s ease-out forwards;
+        }
+
+        @keyframes heartSwarm2 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          100% { transform: translate(80px, -100px) scale(1.3) rotate(10deg); opacity: 0; }
+        }
+        .heart-particle-2, .heart-particle-mobile-2 {
+          animation: heartSwarm2 1s ease-out 0.1s forwards; /* Stagger start */
+        }
+
+        @keyframes heartSwarm3 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          100% { transform: translate(-70px, 90px) scale(1.6) rotate(25deg); opacity: 0; }
+        }
+        .heart-particle-3, .heart-particle-mobile-3 {
+          animation: heartSwarm3 1s ease-out 0.2s forwards;
+        }
+
+        @keyframes heartSwarm4 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          100% { transform: translate(110px, 50px) scale(1.2) rotate(-20deg); opacity: 0; }
+        }
+        .heart-particle-4, .heart-particle-mobile-4 {
+          animation: heartSwarm4 1s ease-out 0.05s forwards;
+        }
+
+        @keyframes heartSwarm5 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          100% { transform: translate(0px, -130px) scale(1.4) rotate(5deg); opacity: 0; }
+        }
+        .heart-particle-5, .heart-particle-mobile-5 {
+          animation: heartSwarm5 1s ease-out 0.15s forwards;
+        }
+
+        /* Extra for desktop if using 7 particles */
+        @keyframes heartSwarm6 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          100% { transform: translate(-120px, 20px) scale(1.3) rotate(30deg); opacity: 0; }
+        }
+        .heart-particle-6 {
+          animation: heartSwarm6 1s ease-out 0.25s forwards;
+        }
+
+        @keyframes heartSwarm7 {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          100% { transform: translate(90px, 100px) scale(1.5) rotate(-35deg); opacity: 0; }
+        }
+        .heart-particle-7 {
+          animation: heartSwarm7 1s ease-out 0.3s forwards;
+        }
+      `}</style>
     </div>
   );
 }
