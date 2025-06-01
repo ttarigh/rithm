@@ -19,9 +19,17 @@ export default function AboutPage() {
               <p>placeholder text</p>
               <p>placeholder text</p>
             </div>
+            {/* Sign Up Now Button */}
+            <div className="mt-6"> {/* Spacing for the new button */}
+                <Link href="/signup-steps">
+                    <span className="inline-block py-2 px-4 italic border border-dashed border-[#ff00ff] text-[#ff00ff] bg-white hover:bg-[#ffff00] hover:border-black hover:text-black text-lg cursor-pointer">
+                        sign up for Rithm
+                    </span>
+                </Link>
+            </div>
             <div className="mt-auto pt-10"> {/* Pushes link to bottom if content above is short */}
-              <Link href="#"> {/* Placeholder link */}
-                <span className="inline-block bg-[#ffff00] text-black py-2 px-4 text-lg font-medium">
+              <Link href="https://tina.zone" target="_blank" rel="noopener noreferrer"> {/* Updated link and added hover */}
+                <span className="inline-block text-blue-700 text-lg font-medium hover:underline">
                   more from www.tina.zone
                 </span>
               </Link>
