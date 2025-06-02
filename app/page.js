@@ -24,16 +24,21 @@ export default function LandingPage() {
   };
 
   useEffect(() => {
-    if (isMobile && onLandMobileVideoRef.current) {
-      onLandMobileVideoRef.current.play().catch(error => {
+    const mobileVideo = onLandMobileVideoRef.current;
+    const desktopVideo = onLandDesktopVideoRef.current;
+
+    if (isMobile && mobileVideo) {
+      mobileVideo.muted = true;
+      mobileVideo.play().catch(error => {
         console.error("Autoplay prevented for onLand mobile video:", error);
       });
-    } else if (!isMobile && onLandDesktopVideoRef.current) {
-      onLandDesktopVideoRef.current.play().catch(error => {
+    } else if (!isMobile && desktopVideo) {
+      desktopVideo.muted = true;
+      desktopVideo.play().catch(error => {
         console.error("Autoplay prevented for onLand desktop video:", error);
       });
     }
-  }, [isMobile, videoEnded]);
+  }, [isMobile]);
 
   return (
     <div className="relative flex flex-col items-center justify-start h-screen w-full overflow-hidden" style={{ outline: 'none' }}>
