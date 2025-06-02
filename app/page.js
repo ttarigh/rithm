@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 
 export default function LandingPage() {
-  const [videoEnded, setVideoEnded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const onLandMobileVideoRef = useRef(null);
@@ -18,10 +17,6 @@ export default function LandingPage() {
     window.addEventListener('resize', checkIsMobile);
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
-
-  const handleVideoEnd = () => {
-    setVideoEnded(true);
-  };
 
   useEffect(() => {
     const mobileVideo = onLandMobileVideoRef.current;
@@ -48,17 +43,8 @@ export default function LandingPage() {
           <video
             ref={onLandMobileVideoRef}
             key="/onLandMobile.mp4"
-            className={`w-full h-full object-cover -translate-y-[18%] scale-80 ${videoEnded ? 'hidden' : ''}`}
+            className="w-full h-full object-cover -translate-y-[18%] scale-80"
             src="/onLandMobile.mp4"
-            autoPlay
-            muted
-            playsInline
-            onEnded={handleVideoEnd}
-          />
-          <video
-            key="/afterLandMobile.mp4"
-            className={`absolute inset-0 w-full h-full object-cover -translate-y-[18%] scale-80 ${videoEnded ? '' : 'hidden'}`}
-            src="/afterLandMobile.mp4"
             autoPlay
             muted
             playsInline
@@ -71,17 +57,8 @@ export default function LandingPage() {
           <video
             ref={onLandDesktopVideoRef}
             key="/onLandDesktop.mp4"
-            className={`w-full h-full object-cover sm:translate-y-0 scale-80 ${videoEnded ? 'hidden' : ''}`}
+            className="w-full h-full object-cover sm:translate-y-0 scale-80"
             src="/onLandDesktop.mp4"
-            autoPlay
-            muted
-            playsInline
-            onEnded={handleVideoEnd}
-          />
-          <video
-            key="/afterLandDesktop.mp4"
-            className={`absolute inset-0 w-full h-full object-cover sm:translate-y-0 scale-80 ${videoEnded ? '' : 'hidden'}`}
-            src="/afterLandDesktop.mp4"
             autoPlay
             muted
             playsInline
