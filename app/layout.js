@@ -12,20 +12,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
+  metadataBase: new URL('https://rithm.love'),
   title: "rithm.love",
   description: "find your scrollmate.",
   openGraph: {
     title: "rithm.love",
     description: "find your scrollmate.",
-    url: "https://rithm.love", // Replace with your actual domain
+    url: "https://rithm.love",
     siteName: "rithm.love",
     type: "website",
+    // images are automatically picked up by Next.js if named opengraph-image.js/.ts/.tsx or opengraph-image.png/.jpg/.jpeg
   },
   twitter: {
-    card: "summary", // Or "summary_large_image" if you have a large image
+    card: "summary_large_image",
     title: "rithm.love",
     description: "find your scrollmate.",
+    // images are automatically picked up by Next.js if named twitter-image.js/.ts/.tsx or twitter-image.png/.jpg/.jpeg
     // creator: "@yourtwitterhandle", // Optional: add your Twitter handle
+  },
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/apple-icon.png', // We'll create apple-icon.js that generates this path
   },
 };
 
