@@ -39,7 +39,7 @@ export default function LandingPage() {
 
       <div className="relative z-10 flex flex-col items-center justify-start text-center p-4 sm:p-6 md:p-8 gap-2 sm:gap-6 pt-4 sm:pt-8 md:pt-8 font-sans w-full flex-grow">
         <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight">
-          <span className="text-[#ffc3ff]">find your </span>
+          <span className="text-[#ffc3ff]">find ur </span>
           <span className="text-[#ff00ff]">scrollmate</span>
         </h1>
 

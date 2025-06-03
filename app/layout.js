@@ -19,15 +19,21 @@ export const metadata = {
     title: "rithm.love",
     description: "find your scrollmate.",
     url: "https://rithm.love",
-    siteName: "rithm.love",
     type: "website",
-    // images are automatically picked up by Next.js if named opengraph-image.js/.ts/.tsx or opengraph-image.png/.jpg/.jpeg
+    images: [
+      {
+        url: '/preview.gif',
+        width: 800, // You might want to adjust these to your GIF's actual dimensions
+        height: 600,
+        alt: 'rithm.love preview',
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "rithm.love",
     description: "find your scrollmate.",
-    // images are automatically picked up by Next.js if named twitter-image.js/.ts/.tsx or twitter-image.png/.jpg/.jpeg
+    images: ['/preview.gif'], // Twitter also uses opengraph images if not specified, but explicit is good.
     // creator: "@yourtwitterhandle", // Optional: add your Twitter handle
   },
   icons: {
