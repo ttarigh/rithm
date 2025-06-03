@@ -23,10 +23,9 @@ export const metadata = {
     images: [
       {
         url: '/preview.gif',
-        width: 640,
-        height: 1138,
+        width: 800, // You might want to adjust these to your GIF's actual dimensions
+        height: 600,
         alt: 'rithm.love preview',
-        type: 'image/gif',
       },
     ],
   },
@@ -34,15 +33,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "rithm.love",
     description: "find your scrollmate.",
-    images: [
-      {
-        url: '/preview.gif',
-        width: 640,
-        height: 1138,
-        alt: 'rithm.love preview',
-        type: 'image/gif',
-      },
-    ],
+    images: ['/preview.gif'], // Twitter also uses opengraph images if not specified, but explicit is good.
     // creator: "@yourtwitterhandle", // Optional: add your Twitter handle
   },
   icons: {
