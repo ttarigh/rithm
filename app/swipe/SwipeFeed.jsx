@@ -8,7 +8,31 @@ import Link from 'next/link' // Import Link
 
 // Placeholder for Card component - we'll define this later
 const ProfileCard = ({ profile }) => {
-  if (!profile) return <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-800 border-2 border-dashed border-[#ff00ff]">No more profiles</div>;
+  const handleShareClick = async () => {
+    try {
+      await navigator.clipboard.writeText('https://rithm.love');
+      alert("𐙚 ‧₊˚ ⋅copied link ⋅˚₊‧𐙚"); // Using the user's chosen message
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      alert('Oops! Could not copy the link. Please try again! (╥_╥)');
+    }
+  };
+
+  if (!profile) {
+    return (
+      <div className="w-full h-full bg-gray-200 flex flex-col items-center justify-center text-center text-gray-800 border-2 border-dashed border-[#ff00ff] p-4">
+        <p className="mb-4 text-lg">
+          No more profiles, share Rithm with friends!
+        </p>
+        <button 
+          onClick={handleShareClick}
+          className="inline-block py-2 px-4 italic border-2 border-dashed border-[#ff00ff] text-[#ff00ff] bg-white hover:bg-[#ffff00] hover:border-black hover:text-black text-lg cursor-pointer"
+        >
+          Share Rithm
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full bg-white overflow-hidden flex flex-col border-2 border-dashed border-[#ff00ff]">

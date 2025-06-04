@@ -10,14 +10,17 @@ export default function AboutPage() {
           <div className="w-full md:w-1/2 flex flex-col space-y-6">
             <h1 className="text-5xl md:text-6xl font-bold italic text-black">abt Rithm...</h1>
             <div className="space-y-1 text-black text-lg">
-              <p>placeholder text</p>
-              <p>placeholder text</p>
-              <p>placeholder text</p>
-              <p>placeholder text</p>
-              <p>placeholder text</p>
-              <p>placeholder text</p>
-              <p>placeholder text</p>
-              <p>placeholder text</p>
+              <p style={{ backgroundColor: 'yellow' }}>mark zuckerberg knows you better than your mother.</p> 
+              <p>he's watched your every move on instagram for years.</p>
+              <p>he knows what you like, what you don't like, and what you're looking for.</p>
+              <br></br>
+              <p>this algorithm has made you conscious of hip dips, disrupted governments, made millionaires overnight.</p>
+              <p> <strong> what if we repurposed it for love?</strong></p>
+              <br></br>
+              <p>your explore page is a mirror of your digital microinteractions. it's more honest than any dating profile you've ever written.</p>
+              <p>other dating apps make you perform. curate. lie about loving hiking.</p>
+              <p>your algorithm already knows who you'd swipe right on.</p>
+              <p>rithm.love: screenshot your explore page. find your scrollmate. no bios. no prompts. just pure digital pheromones.</p>
             </div>
             {/* Sign Up Now Button */}
             <div className="mt-6"> {/* Spacing for the new button */}
