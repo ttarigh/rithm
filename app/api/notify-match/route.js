@@ -72,14 +72,10 @@ export async function POST(request) {
           to: [currentUserEmail],
           subject: `You have a new match on ${YOUR_APP_NAME}! 🔥`,
           html: `
-        <div style="background-color:#fff0f6; font-family: 'sans-serif', cursive, sans-serif; color: #FF00FF; text-align: center; padding: 20px;">
+        <div style="background-color:#fff0f6; font-family: sans-serif; color: #FF00FF; text-align: center; padding: 20px;">
           <div style="max-width: 480px; margin: 0 auto; background: #ffe6f0; border: 2px dashed #FF00FF; border-radius: 20px; padding: 30px;">
             <h2 style="font-size: 24px;">(｡♥‿♥｡) Hi ${currentUser.name}!</h2>
             <p style="font-size: 16px;">You've just matched with <strong>${matchedUser.name}</strong> on ${YOUR_APP_NAME}! ✨</p>
-            <a href="${YOUR_APP_LINK}/match/${matchedUser.id}"
-              style="display: inline-block; margin-top: 20px; padding: 12px 24px; font-size: 16px; color: #FF00FF; text-decoration: none; border: 2px dashed #FF00FF; border-radius: 12px;">
-              🩷 View their profile 🩷
-            </a>
             <p style="font-size: 12px; margin-top: 30px; color: #b300b3;">
               Love is in the (virtual) air! ～(^з^)-♡<br>
               — The ${YOUR_APP_NAME} Team
