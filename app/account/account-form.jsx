@@ -100,6 +100,7 @@ export default function AccountForm({ user }) {
   return (
     <div className="form-widget space-y-6 p-6 max-w-lg mx-auto bg-white ">
       <ExploreScreenshotUpload
+        supabase={supabase}
         uid={user?.id}
         url={exploreScreenshotUrl}
         size={200}

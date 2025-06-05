@@ -1,10 +1,8 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import Image from 'next/image'
 
-export default function ExploreScreenshotUpload({ uid, url, size, onUpload, onUploading }) {
-  const supabase = createClient()
+export default function ExploreScreenshotUpload({ supabase, uid, url, size, onUpload, onUploading }) {
   const [uploading, setUploading] = useState(false)
 
   // Function to handle the upload process
@@ -13,6 +11,12 @@ export default function ExploreScreenshotUpload({ uid, url, size, onUpload, onUp
       setUploading(true)
       if (onUploading) onUploading(true)
 
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        throw new Error('Could not get user session. Please try again.');
+      }
+      const user = session.user;
+
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('You must select an image to upload.')
       }
@@ -20,7 +24,7 @@ export default function ExploreScreenshotUpload({ uid, url, size, onUpload, onUp
       const file = event.target.files[0]
 
       const fileExt = file.name.split('.').pop()
-      const filePath = `${uid}-explorescreenshot.${fileExt}`
+      const filePath = `${user.id}-explorescreenshot.${fileExt}`
 
       // Upload to the 'explore_screenshots' bucket
       const { error: uploadError } = await supabase.storage
@@ -41,13 +45,11 @@ export default function ExploreScreenshotUpload({ uid, url, size, onUpload, onUp
           throw new Error("Upload succeeded but could not get public URL."); // This might be where the StorageUnknownError happens
       }
 
-      console.log("Got public URL:", publicUrlData.publicUrl);
       // Call the onUpload callback with the full public URL
-      onUpload(publicUrlData.publicUrl)
+      onUpload(publicUrlData.publicUrl + `?t=${new Date().getTime()}`)
 
     } catch (error) {
       // Check if the error object itself might contain more clues
-      console.error("Upload/Get URL Error Object:", error); 
       alert(`Error uploading image: ${error.message || 'Unknown error'}`)
     } finally {
       setUploading(false)
