@@ -59,9 +59,10 @@ export async function signup(formData) {
     return redirect(`/login?message=${encodeURIComponent(message)}`);
   }
 
-  // Sign up successful. 
+  // Sign up successful.
   // If email verification is OFF: Middleware will redirect to /signup-steps on next load.
   // If email verification is ON: User needs to verify email first.
   // Redirecting to login page with info message covers both cases for now.
-  return redirect('/login?message=Check email to continue sign in process or login') 
+  const successMessage = "Signup successful! Check your spam folder, and move it to inbox to click the link.";
+  return redirect(`/login?message=${encodeURIComponent(successMessage)}`);
 }
