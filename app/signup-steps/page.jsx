@@ -67,7 +67,7 @@ const StepNameAgePreferencesHandle = ({ onSubmit, onPrevious, initialData }) => 
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="first name"
-          className="mt-1 block w-full border border-dashed border-black p-2 focus:outline-none focus:border-[#ff00ff]"
+          className="mt-1 block w-full border border-dashed border-black p-2 focus:outline-none focus:border-[#ff00ff] text-black"
           required
         />
       </div>
@@ -81,7 +81,7 @@ const StepNameAgePreferencesHandle = ({ onSubmit, onPrevious, initialData }) => 
           value={age}
           onChange={(e) => setAge(e.target.value)}
           placeholder="age"
-          className="mt-1 block w-full border border-dashed border-black p-2 focus:outline-none focus:border-[#ff00ff]"
+          className="mt-1 block w-full border border-dashed border-black p-2 focus:outline-none focus:border-[#ff00ff] text-black"
           required
         />
       </div>
@@ -92,7 +92,7 @@ const StepNameAgePreferencesHandle = ({ onSubmit, onPrevious, initialData }) => 
           id="step-gender"
           value={gender}
           onChange={(e) => setGender(e.target.value)}
-          className="mt-1 block w-full border border-dashed border-black p-2 bg-white focus:outline-none focus:border-[#ff00ff]"
+          className="mt-1 block w-full border border-dashed border-black p-2 bg-white focus:outline-none focus:border-[#ff00ff] text-black"
           required
         >
           <option value="" disabled>Select...</option>
@@ -136,7 +136,7 @@ const StepNameAgePreferencesHandle = ({ onSubmit, onPrevious, initialData }) => 
             placeholder="urhandle"
             value={instagram}
             onChange={(e) => setInstagram(e.target.value)}
-            className="block w-full min-w-0 flex-1 border-r border-t border-b border-dashed border-black p-2 focus:outline-none focus:border-[#ff00ff]"
+            className="block w-full min-w-0 flex-1 border-r border-t border-b border-dashed border-black p-2 focus:outline-none focus:border-[#ff00ff] text-black"
           />
         </div>
          <p className="text-xs text-black/70 italic mt-1">ur handle will only be shown to successful matches.</p>
