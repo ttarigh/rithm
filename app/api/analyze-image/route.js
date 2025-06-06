@@ -79,8 +79,11 @@ export async function POST(request) {
       safetySettings,
     });
 
-    if (result.response && result.response.candidates && result.response.candidates.length > 0) {
-      const analysis = result.response.candidates[0].content.parts[0].text;
+    console.log("Full Gemini API Result:", JSON.stringify(result, null, 2));
+
+    const analysis = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (analysis) {
       return NextResponse.json({ analysis: analysis });
     } else {
       // Log the full response if no candidates or parts are found as expected

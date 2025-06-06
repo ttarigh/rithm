@@ -160,7 +160,7 @@ const StepNameAgePreferencesHandle = ({ onSubmit, onPrevious, initialData }) => 
   );
 };
 
-const Step1UploadScreenshot = ({ onComplete, initialData, userId }) => {
+const Step1UploadScreenshot = ({ supabase, onComplete, initialData, userId }) => {
   const [screenshotUrl, setScreenshotUrl] = useState(initialData.screenshotUrl || null);
   const [uploading, setUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false); 
@@ -206,6 +206,7 @@ const Step1UploadScreenshot = ({ onComplete, initialData, userId }) => {
       <h2 className="text-3xl italic text-center text-[#ff00ff] mb-6">1. upload ur IG scrollshot</h2>
       <p className="text-sm text-black italic text-center">go to <a href="https://instagram.com/explore" target="_blank" rel="noopener noreferrer" className="text-[#ff00ff] hover:underline">instagram.com/explore</a> and screenshot it. this is what cuties will see on ur profile. we also analyze it to understand ur digital pheromones ;)</p>
       <ExploreScreenshotUpload
+        supabase={supabase}
         uid={userId}
         url={screenshotUrl}
         size={200}
@@ -340,6 +341,7 @@ export default function SignUpSteps() {
       <div className="w-full max-w-lg">
         {currentStep === 1 && (
           <Step1UploadScreenshot 
+            supabase={supabase}
             onComplete={handleStepComplete} 
             initialData={profileData} 
             userId={user.id} 
