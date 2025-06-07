@@ -95,20 +95,12 @@ export async function POST(request) {
           to: [matchedUserEmail],
           subject: `You have a new match on ${YOUR_APP_NAME}! 🔥`,
           html: `
-            <div style="font-family: 'Comic Sans MS', cursive, sans-serif; color: #FF00FF; text-align: center; padding: 20px; background-color:#fff0f6;">
-              <div style="max-width: 480px; margin: 0 auto; background: #ffe6f0; border: 2px dashed #FF00FF; border-radius: 20px; padding: 30px;">
-                <h2 style="font-size: 24px;">(づ｡◕‿‿◕｡)づ Hi ${matchedUser.name}!</h2>
-                <p style="font-size: 16px;">You've just been matched with <strong>${currentUser.name}</strong> on ${YOUR_APP_NAME}! 🎉</p>
-                <p style="font-size: 16px;">Curious? Take a peek!</p>
-                <a href="${YOUR_APP_LINK}/match/${currentUser.id}"
-                  style="display: inline-block; margin-top: 20px; padding: 12px 24px; font-size: 16px; color: #FF00FF; text-decoration: none; border: 2px dashed #FF00FF; border-radius: 12px;">
-                  💖 View ${currentUser.name}\'s Profile 💖
-                </a>
-                <p style="font-size: 12px; margin-top: 30px; color: #b300b3;">
-                  May the Rithm be with you! (*＾▽＾)／＼(＾▽＾*)
-                  <br>— The ${YOUR_APP_NAME} Team
-                </p>
-              </div>
+            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+              <h2>Hi ${matchedUser.name},</h2>
+              <p>Good news! You've matched with <strong>${currentUser.name}</strong> on ${YOUR_APP_NAME}.</p>
+              <p>Why not say hello or check out their profile?</p>
+              <p>Happy connecting!</p>
+              <p>The ${YOUR_APP_NAME} Team</p>
             </div>
           `,
         });
